@@ -1,0 +1,161 @@
+/* ===========================================================
+ *  theme definitions
+ *
+ *  the theme picker (dj avatar) applies themes at runtime
+ *  using the values in themes.ts. if you edit colors here,
+ *  update themes.ts to match so the picker stays in sync.
+ *
+ *  the first uncommented :root block below is the fallback
+ *  that loads before js kicks in.
+ * =========================================================== */
+
+
+/* --- neutral (default fallback) --- */
+:root {
+  --bg: #f8efe2;
+  --surface: #f5f3f0;
+  --border: #eee;
+  --text: #333;
+  --text-secondary: #999;
+  --accent: #e8e8e8;
+  --line-color: #e4dcdc;
+  --primary: #7c3aed;
+  --primary-dark: #6d28d9;
+  --primary-light: rgba(124, 58, 237, 0.04);
+  --today-bg-start: #ffffff;
+  --today-bg-end: #f5f3f0;
+  --divider: #d4d4d4;
+  --label-accent: #b08968;
+  --checkbox-border: #ccc;
+  --checkbox-checked: #ccc;
+  --checkbox-hover: #aaa;
+  --header-border: #333;
+  --hover-bg: #ddd;
+  --delete-bg: #fde2e4;
+  --delete-color: #dc2626;
+}
+
+/* --- dusty pink --- */
+/*
+  --bg: #f5deea;
+  --surface: #faf5f5;
+  --border: #f0e0e0;
+  --text: #4a3535;
+  --text-secondary: #b09090;
+  --accent: #f0e4e4;
+  --line-color: #f2e8e8;
+  --primary: #c76b7f;
+  --primary-dark: #a85566;
+  --primary-light: rgba(199, 107, 127, 0.06);
+  --today-bg-start: #fcf4f4;
+  --today-bg-end: #f5deea;
+  --divider: #e0c8c8;
+  --label-accent: #c9967a;
+  --checkbox-border: #d4b8b8;
+  --checkbox-checked: #d4b8b8;
+  --checkbox-hover: #c0a0a0;
+  --header-border: #4a3535;
+  --hover-bg: #ecd8d8;
+  --delete-bg: #f8d0d0;
+  --delete-color: #b83030;
+*/
+
+/* --- Ocean --- */
+/*
+  --bg: #f0f4f8;
+  --surface: #f0f4f8;
+  --border: #d8e2ec;
+  --text: #2c3e50;
+  --text-secondary: #8298ae;
+  --accent: #dce6f0;
+  --line-color: #e4eaf0;
+  --primary: #2980b9;
+  --primary-dark: #1f6d9a;
+  --primary-light: rgba(41, 128, 185, 0.05);
+  --today-bg-start: #f8fbff;
+  --today-bg-end: #f0f4f8;
+  --divider: #c0d0de;
+  --label-accent: #7094ad;
+  --checkbox-border: #aec4d6;
+  --checkbox-checked: #aec4d6;
+  --checkbox-hover: #8eacc2;
+  --header-border: #2c3e50;
+  --hover-bg: #ccd8e4;
+  --delete-bg: #fde2e4;
+  --delete-color: #c0392b;
+*/
+
+/* --- Forest --- */
+/*
+  --bg: #f2f5ef;
+  --surface: #f2f5ef;
+  --border: #d8e2d0;
+  --text: #2d3b2d;
+  --text-secondary: #839882;
+  --accent: #dfe6d8;
+  --line-color: #e5ebe0;
+  --primary: #5a8a5a;
+  --primary-dark: #467046;
+  --primary-light: rgba(90, 138, 90, 0.05);
+  --today-bg-start: #f9fbf6;
+  --today-bg-end: #f2f5ef;
+  --divider: #beceb4;
+  --label-accent: #8b7355;
+  --checkbox-border: #b0c4a8;
+  --checkbox-checked: #b0c4a8;
+  --checkbox-hover: #96b08c;
+  --header-border: #2d3b2d;
+  --hover-bg: #cdd8c6;
+  --delete-bg: #f0ddd0;
+  --delete-color: #a84432;
+*/
+
+/* --- Lavender --- */
+/*
+  --bg: #f5f3f8;
+  --surface: #f5f3f8;
+  --border: #e0daea;
+  --text: #3d3552;
+  --text-secondary: #9990b0;
+  --accent: #e6e0f0;
+  --line-color: #eae6f0;
+  --primary: #7c5cbf;
+  --primary-dark: #6445a5;
+  --primary-light: rgba(124, 92, 191, 0.05);
+  --today-bg-start: #fbf9ff;
+  --today-bg-end: #f5f3f8;
+  --divider: #cfc8e0;
+  --label-accent: #9a7eb8;
+  --checkbox-border: #c0b8d4;
+  --checkbox-checked: #c0b8d4;
+  --checkbox-hover: #a89ec0;
+  --header-border: #3d3552;
+  --hover-bg: #d6d0e4;
+  --delete-bg: #f0dce8;
+  --delete-color: #a83860;
+*/
+
+/* --- mocha --- */
+/*
+  --bg: #f5f0eb;
+  --surface: #f5f0eb;
+  --border: #e2d8ce;
+  --text: #3e322a;
+  --text-secondary: #9a8978;
+  --accent: #e8e0d6;
+  --line-color: #ece6de;
+  --primary: #8b6b4a;
+  --primary-dark: #6e5438;
+  --primary-light: rgba(139, 107, 74, 0.05);
+  --today-bg-start: #faf7f3;
+  --today-bg-end: #f5f0eb;
+  --divider: #d0c4b6;
+  --label-accent: #a07850;
+  --checkbox-border: #c8b8a6;
+  --checkbox-checked: #c8b8a6;
+  --checkbox-hover: #b0a08c;
+  --header-border: #3e322a;
+  --hover-bg: #dcd2c6;
+  --delete-bg: #f0ddd0;
+  --delete-color: #a84432;
+*/

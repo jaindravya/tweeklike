@@ -1,0 +1,88 @@
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+export function toDateString(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+export function parseDate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** return the monday of the week containing `date`. */
+export function getMonday(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/** return an array of 7 date objects (mon–sun) for the week containing `date`. */
+export function getWeekDates(date: Date): Date[] {
+  const monday = getMonday(date);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+}
+
+export function addWeeks(date: Date, weeks: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + weeks * 7);
+  return d;
+}
+
+const MONTH_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+export function formatDayHeader(date: Date): {
+  dayName: string;
+  dateLabel: string;
+} {
+  return {
+    dayName: DAY_NAMES[date.getDay()],
+    dateLabel: `${MONTH_SHORT[date.getMonth()]} ${date.getDate()}`,
+  };
+}
+
+export function formatMonthYear(dates: Date[]): string {
+  const months = new Set(dates.map((d) => d.getMonth()));
+  const years = new Set(dates.map((d) => d.getFullYear()));
+
+  if (months.size === 1) {
+    return `${MONTH_NAMES[[...months][0]]} ${[...years][0]}`;
+  }
+  const first = dates[0];
+  const last = dates[dates.length - 1];
+  if (first.getFullYear() === last.getFullYear()) {
+    return `${MONTH_NAMES[first.getMonth()]} / ${MONTH_NAMES[last.getMonth()]} ${first.getFullYear()}`;
+  }
+  return `${MONTH_NAMES[first.getMonth()]} ${first.getFullYear()} / ${MONTH_NAMES[last.getMonth()]} ${last.getFullYear()}`;
+}
+
+export function isToday(date: Date): boolean {
+  const now = new Date();
+  return (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  );
+}
+
+export function isPast(dateStr: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return parseDate(dateStr) < today;
+}
