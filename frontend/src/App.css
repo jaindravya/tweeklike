@@ -39,7 +39,7 @@ html, body, #root {
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
   padding: 20px 24px;
   background: var(--bg);
@@ -194,7 +194,7 @@ html, body, #root {
   grid-template-columns: 28px 1fr;
   grid-template-rows: auto 2fr auto 3fr;
   flex: 1;
-  min-height: 0;
+  min-height: 400px;
 }
 
 .section-labels {

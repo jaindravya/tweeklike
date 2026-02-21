@@ -1,73 +1,53 @@
-# React + TypeScript + Vite
+# Tweeklike
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A weekly planner inspired by [Tweek](https://tweek.so), built with React + TypeScript + Vite.
 
-Currently, two official plugins are available:
+## features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **weekly calendar view** — mon through fri columns, with sat/sun combined into a compact weekend column
+- **academic / personal sections** — each day is split into two sections with a synchronized divider across the week
+- **day labels** — pin labels like "exam day" to the top of a column, separate from tasks
+- **drag and drop** — move tasks between days and sections freely
+- **task details** — click any task to edit title, add notes, subtasks, pick a color, set recurrence, or reassign the date
+- **color highlights** — preset and custom hex colors, shown as rounded pills around task text
+- **auto-rollover** — unfinished tasks from past days automatically move to today
+- **recurring tasks** — daily, weekly, monthly, or custom intervals
+- **someday section** — a 3-column grid for undated tasks
+- **theme picker** — click the avatar to switch between 6 themes (neutral, dusty pink, ocean, forest, lavender, mocha)
+- **notebook-style ui** — ruled lines, click-to-add on empty rows, no clutter
 
-## React Compiler
+## getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+open http://localhost:5173 in your browser.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## stack
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- [react](https://react.dev) + [typescript](https://www.typescriptlang.org)
+- [vite](https://vite.dev) for dev server and bundling
+- [@hello-pangea/dnd](https://github.com/hello-pangea/dnd) for drag and drop
+- css custom properties for theming
+- css subgrid for synchronized layout
+- localstorage for task persistence (database integration coming soon)
+
+## project structure
+
 ```
+frontend/
+  src/
+    components/    — ui components (header, week view, day column, task card, modal, etc.)
+    hooks/         — useTasks (state management), useTheme (theme switching)
+    utils/         — date helpers
+    themes.ts      — theme definitions
+    theme.css      — theme variable reference
+    types.ts       — typescript interfaces
+    App.css        — all styles
+```
+
+## themes
+
+switch themes from the app by clicking the avatar icon in the top right. to tweak theme colors, edit `themes.ts` (runtime values) and `theme.css` (css fallback reference).
