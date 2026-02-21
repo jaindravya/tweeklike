@@ -673,6 +673,42 @@ html, body, #root {
   color: var(--delete-color);
 }
 
+.delete-btn-wrapper {
+  position: relative;
+}
+
+.delete-options-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--divider);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+  min-width: 190px;
+  padding: 4px;
+  margin-top: 4px;
+}
+
+.delete-options-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-options-dropdown button:hover {
+  background: var(--delete-bg);
+  color: var(--delete-color);
+}
+
 .modal-title-row {
   display: flex;
   align-items: center;

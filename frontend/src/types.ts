@@ -44,5 +44,6 @@ export interface Task {
   notes: string;
   subtasks: Subtask[];
   recurrence: RecurrenceRule | null;
+  recurringParentId?: string; // links generated instances back to the template task
   order: number;
 }

@@ -28,6 +28,7 @@ export default function App() {
     addTask,
     updateTask,
     deleteTask,
+    deleteTaskAndFuture,
     toggleComplete,
     addSubtask,
     toggleSubtask,
@@ -96,6 +97,7 @@ export default function App() {
             onClose={handleCloseModal}
             onUpdate={updateTask}
             onDelete={deleteTask}
+            onDeleteFuture={deleteTaskAndFuture}
             onToggleComplete={toggleComplete}
             onAddSubtask={addSubtask}
             onToggleSubtask={toggleSubtask}

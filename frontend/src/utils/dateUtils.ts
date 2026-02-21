@@ -86,3 +86,74 @@ export function isPast(dateStr: string): boolean {
   today.setHours(0, 0, 0, 0);
   return parseDate(dateStr) < today;
 }
+
+export function addDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+/**
+ * generate future dates where a recurring task should appear.
+ * produces dates for ~4 weeks ahead from the task's start date.
+ */
+export function getRecurrenceDates(
+  startDateStr: string,
+  rule: { type: string; interval?: number; daysOfWeek?: number[] },
+  weeksAhead = 4
+): string[] {
+  const start = parseDate(startDateStr);
+  const end = addDays(start, weeksAhead * 7);
+  const dates: string[] = [];
+
+  switch (rule.type) {
+    case 'daily': {
+      let d = addDays(start, 1);
+      while (d <= end) {
+        dates.push(toDateString(d));
+        d = addDays(d, 1);
+      }
+      break;
+    }
+    case 'weekly': {
+      let d = addDays(start, 7);
+      while (d <= end) {
+        dates.push(toDateString(d));
+        d = addDays(d, 7);
+      }
+      break;
+    }
+    case 'monthly': {
+      const dayOfMonth = start.getDate();
+      for (let m = 1; m <= 3; m++) {
+        const d = new Date(start);
+        d.setMonth(d.getMonth() + m);
+        d.setDate(dayOfMonth);
+        if (d.getDate() === dayOfMonth) {
+          dates.push(toDateString(d));
+        }
+      }
+      break;
+    }
+    case 'custom': {
+      const interval = rule.interval ?? 1;
+      if (rule.daysOfWeek && rule.daysOfWeek.length > 0) {
+        let d = addDays(start, 1);
+        while (d <= end) {
+          if (rule.daysOfWeek.includes(d.getDay())) {
+            dates.push(toDateString(d));
+          }
+          d = addDays(d, 1);
+        }
+      } else {
+        let d = addDays(start, interval);
+        while (d <= end) {
+          dates.push(toDateString(d));
+          d = addDays(d, interval);
+        }
+      }
+      break;
+    }
+  }
+  return dates;
+}

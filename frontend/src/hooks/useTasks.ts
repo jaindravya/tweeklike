@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Task, Subtask, RecurrenceRule, TaskColor, TaskCategory } from '../types';
-import { toDateString, isPast } from '../utils/dateUtils';
+import { toDateString, isPast, getRecurrenceDates } from '../utils/dateUtils';
 
 let nextId = 100;
 function genId(): string {
@@ -171,6 +171,7 @@ function migrateTasks(tasks: Task[]): Task[] {
     ...t,
     category: t.category ?? 'personal',
     isLabel: t.isLabel ?? false,
+    recurringParentId: t.recurringParentId ?? undefined,
   }));
 }
 
@@ -221,6 +222,20 @@ export function useTasks() {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const deleteTaskAndFuture = useCallback((id: string) => {
+    setTasks((prev) => {
+      const task = prev.find((t) => t.id === id);
+      if (!task) return prev;
+
+      const parentId = task.recurringParentId ?? id;
+      return prev.filter((t) => {
+        if (t.id === id) return false;
+        if (t.recurringParentId === parentId && t.date && task.date && t.date >= task.date) return false;
+        return true;
+      });
+    });
+  }, []);
+
   const toggleComplete = useCallback((id: string) => {
     setTasks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
@@ -268,9 +283,49 @@ export function useTasks() {
 
   const setRecurrence = useCallback(
     (id: string, recurrence: RecurrenceRule | null) => {
-      setTasks((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, recurrence } : t))
-      );
+      setTasks((prev) => {
+        // remove old generated instances (uncompleted ones only)
+        const withoutOldInstances = prev.filter(
+          (t) => !(t.recurringParentId === id && !t.completed)
+        );
+
+        const task = withoutOldInstances.find((t) => t.id === id);
+        if (!task) return prev;
+
+        // update the recurrence rule on the template task
+        const updated = withoutOldInstances.map((t) =>
+          t.id === id ? { ...t, recurrence } : t
+        );
+
+        if (!recurrence || !task.date) return updated;
+
+        // generate instances on future dates
+        const dates = getRecurrenceDates(task.date, recurrence);
+        const existingDates = new Set(
+          updated
+            .filter((t) => t.recurringParentId === id)
+            .map((t) => t.date)
+        );
+
+        const newInstances: Task[] = dates
+          .filter((d) => !existingDates.has(d))
+          .map((date) => ({
+            id: genId(),
+            title: task.title,
+            completed: false,
+            date,
+            category: task.category,
+            isLabel: false,
+            color: task.color,
+            notes: task.notes,
+            subtasks: [],
+            recurrence: null,
+            recurringParentId: id,
+            order: 0,
+          }));
+
+        return [...updated, ...newInstances];
+      });
     },
     []
   );
@@ -301,7 +356,7 @@ export function useTasks() {
     setTasks((prev) => {
       let changed = false;
       const updated = prev.map((t) => {
-        if (t.date && !t.completed && !t.isLabel && isPast(t.date)) {
+        if (t.date && !t.completed && !t.isLabel && !t.recurringParentId && isPast(t.date)) {
           changed = true;
           return { ...t, date: todayStr };
         }
@@ -338,6 +393,7 @@ export function useTasks() {
     addTask,
     updateTask,
     deleteTask,
+    deleteTaskAndFuture,
     toggleComplete,
     addSubtask,
     toggleSubtask,
