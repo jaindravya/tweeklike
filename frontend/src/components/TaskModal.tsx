@@ -42,6 +42,7 @@ export default function TaskModal({
     task.recurrence?.type ?? 'daily'
   );
   const [recInterval, setRecInterval] = useState(task.recurrence?.interval ?? 1);
+  const [recCount, setRecCount] = useState<number | ''>(task.recurrence?.count ?? '');
   const [recDays, setRecDays] = useState<number[]>(
     task.recurrence?.daysOfWeek ?? []
   );
@@ -72,6 +73,9 @@ export default function TaskModal({
     if (recType === 'custom') {
       rule.interval = recInterval;
       rule.daysOfWeek = recDays.length > 0 ? recDays : undefined;
+    }
+    if (recCount !== '' && recCount > 0) {
+      rule.count = recCount;
     }
     onSetRecurrence(task.id, rule);
     setShowRecurrence(false);
@@ -288,6 +292,22 @@ export default function TaskModal({
                   </div>
                 </div>
               )}
+
+              <div className="rec-stop-after">
+                <label>Stop after</label>
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="∞"
+                  value={recCount}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setRecCount(v === '' ? '' : Math.max(1, Number(v)));
+                  }}
+                  className="rec-count-input"
+                />
+                <span>time(s)</span>
+              </div>
 
               <div className="rec-actions">
                 <button className="rec-save-btn" onClick={handleSaveRecurrence}>

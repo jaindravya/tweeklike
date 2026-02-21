@@ -991,6 +991,28 @@ html, body, #root {
   border-color: var(--primary);
 }
 
+.rec-stop-after {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.rec-count-input {
+  width: 50px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+}
+
+.rec-count-input:focus {
+  border-color: var(--primary);
+}
+
 .rec-actions {
   display: flex;
   gap: 8px;

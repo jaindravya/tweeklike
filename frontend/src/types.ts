@@ -4,6 +4,7 @@ export interface RecurrenceRule {
   type: RecurrenceType;
   interval?: number; // e.g. every 3 days
   daysOfWeek?: number[]; // 0=sun, 1=mon, ... 6=sat — for custom
+  count?: number; // stop after this many occurrences (undefined = no limit)
 }
 
 export interface Subtask {

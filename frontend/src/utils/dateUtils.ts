@@ -99,17 +99,18 @@ export function addDays(date: Date, days: number): Date {
  */
 export function getRecurrenceDates(
   startDateStr: string,
-  rule: { type: string; interval?: number; daysOfWeek?: number[] },
+  rule: { type: string; interval?: number; daysOfWeek?: number[]; count?: number },
   weeksAhead = 4
 ): string[] {
   const start = parseDate(startDateStr);
   const end = addDays(start, weeksAhead * 7);
+  const max = rule.count ?? Infinity;
   const dates: string[] = [];
 
   switch (rule.type) {
     case 'daily': {
       let d = addDays(start, 1);
-      while (d <= end) {
+      while (d <= end && dates.length < max) {
         dates.push(toDateString(d));
         d = addDays(d, 1);
       }
@@ -117,7 +118,7 @@ export function getRecurrenceDates(
     }
     case 'weekly': {
       let d = addDays(start, 7);
-      while (d <= end) {
+      while (d <= end && dates.length < max) {
         dates.push(toDateString(d));
         d = addDays(d, 7);
       }
@@ -125,7 +126,7 @@ export function getRecurrenceDates(
     }
     case 'monthly': {
       const dayOfMonth = start.getDate();
-      for (let m = 1; m <= 3; m++) {
+      for (let m = 1; m <= 3 && dates.length < max; m++) {
         const d = new Date(start);
         d.setMonth(d.getMonth() + m);
         d.setDate(dayOfMonth);
@@ -139,7 +140,7 @@ export function getRecurrenceDates(
       const interval = rule.interval ?? 1;
       if (rule.daysOfWeek && rule.daysOfWeek.length > 0) {
         let d = addDays(start, 1);
-        while (d <= end) {
+        while (d <= end && dates.length < max) {
           if (rule.daysOfWeek.includes(d.getDay())) {
             dates.push(toDateString(d));
           }
@@ -147,7 +148,7 @@ export function getRecurrenceDates(
         }
       } else {
         let d = addDays(start, interval);
-        while (d <= end) {
+        while (d <= end && dates.length < max) {
           dates.push(toDateString(d));
           d = addDays(d, interval);
         }
