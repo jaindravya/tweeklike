@@ -1,202 +1,86 @@
-import { useState, useCallback, useEffect } from 'react';
-import type { Task, Subtask, RecurrenceRule, TaskColor, TaskCategory } from '../types';
-import { toDateString, isPast, getRecurrenceDates } from '../utils/dateUtils';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import type { Task, RecurrenceRule, TaskColor, TaskCategory } from '../types';
 
-let nextId = 100;
-function genId(): string {
-  return String(nextId++);
-}
+const API = '/api';
 
-const INITIAL_TASKS: Task[] = [
-  {
-    id: '1',
-    title: 'Work on Cloud project',
-    completed: true,
-    date: '2026-02-16',
-    category: 'academic',
-    isLabel: false,
-    color: 'none',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 0,
-  },
-  {
-    id: '2',
-    title: 'Send email to Nick',
-    completed: true,
-    date: '2026-02-16',
-    category: 'personal',
-    isLabel: false,
-    color: 'none',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 0,
-  },
-  {
-    id: '3',
-    title: 'Set up VM with Prakash',
-    completed: false,
-    date: '2026-02-17',
-    category: 'academic',
-    isLabel: false,
-    color: 'none',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 0,
-  },
-  {
-    id: '4',
-    title: 'Try containerize your project',
-    completed: false,
-    date: '2026-02-18',
-    category: 'academic',
-    isLabel: false,
-    color: 'pink',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 0,
-  },
-  {
-    id: '5',
-    title: '<3 leetcode',
-    completed: false,
-    date: '2026-02-20',
-    category: 'academic',
-    isLabel: false,
-    color: 'purple',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 0,
-  },
-  {
-    id: '6',
-    title: 'Set meeting with counselor',
-    completed: false,
-    date: '2026-02-20',
-    category: 'academic',
-    isLabel: false,
-    color: 'none',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 1,
-  },
-  {
-    id: '7',
-    title: 'Containerize DB',
-    completed: false,
-    date: '2026-02-20',
-    category: 'academic',
-    isLabel: false,
-    color: 'none',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 2,
-  },
-  {
-    id: '12',
-    title: 'Fold clothes',
-    completed: false,
-    date: '2026-02-20',
-    category: 'personal',
-    isLabel: false,
-    color: 'none',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 0,
-  },
-  {
-    id: '8',
-    title: 'New personal project',
-    completed: false,
-    date: '2026-02-21',
-    category: 'personal',
-    isLabel: false,
-    color: 'none',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 0,
-  },
-  {
-    id: '9',
-    title: 'Tweek like website',
-    completed: false,
-    date: '2026-02-21',
-    category: 'academic',
-    isLabel: false,
-    color: 'none',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 0,
-  },
-  {
-    id: '10',
-    title: 'Summer goals: internship, leetcode, interview prep',
-    completed: false,
-    date: null,
-    category: 'academic',
-    isLabel: false,
-    color: 'yellow',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 0,
-  },
-  {
-    id: '11',
-    title: 'Practice reading Hindi',
-    completed: false,
-    date: null,
-    category: 'personal',
-    isLabel: false,
-    color: 'none',
-    notes: '',
-    subtasks: [],
-    recurrence: null,
-    order: 1,
-  },
-];
-
-function migrateTasks(tasks: Task[]): Task[] {
-  return tasks.map((t) => ({
-    ...t,
-    category: t.category ?? 'personal',
-    isLabel: t.isLabel ?? false,
-    recurringParentId: t.recurringParentId ?? undefined,
-  }));
-}
-
-export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    const saved = localStorage.getItem('tweeklike-tasks');
-    if (saved) {
-      try {
-        return migrateTasks(JSON.parse(saved) as Task[]);
-      } catch {
-        return INITIAL_TASKS;
-      }
-    }
-    return INITIAL_TASKS;
+async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> {
+  const res = await fetch(`${API}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
   });
+  if (!res.ok) throw new Error(`api error ${res.status}`);
+  return res.json();
+}
+
+interface ApiTask {
+  id: number;
+  title: string;
+  completed: boolean;
+  date: string | null;
+  category: TaskCategory;
+  isLabel: boolean;
+  color: string;
+  notes: string;
+  subtasks: { id: number; title: string; completed: boolean }[];
+  recurrence: RecurrenceRule | null;
+  recurringParentId: number | null;
+  order: number;
+}
+
+function toTask(a: ApiTask): Task {
+  return {
+    id: String(a.id),
+    title: a.title,
+    completed: a.completed,
+    date: a.date,
+    category: a.category,
+    isLabel: a.isLabel,
+    color: a.color as TaskColor,
+    notes: a.notes,
+    subtasks: a.subtasks.map((s) => ({
+      id: String(s.id),
+      title: s.title,
+      completed: s.completed,
+    })),
+    recurrence: a.recurrence,
+    recurringParentId: a.recurringParentId ? String(a.recurringParentId) : undefined,
+    order: a.order,
+  };
+}
+
+let tempId = -1;
+function nextTempId(): string {
+  return String(tempId--);
+}
+
+export function useTasks(dateFrom?: string, dateTo?: string) {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    localStorage.setItem('tweeklike-tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
-  const addTask = useCallback((title: string, date: string | null, category: TaskCategory = 'personal') => {
-    setTasks((prev) => {
-      const matching = prev.filter((t) => t.date === date && t.category === category);
-      const newTask: Task = {
-        id: genId(),
+  const refresh = useCallback(async () => {
+    const params =
+      dateFrom && dateTo ? `?date_from=${dateFrom}&date_to=${dateTo}` : '';
+    const data = await apiFetch<ApiTask[]>(`/tasks${params}`);
+    if (mountedRef.current) {
+      setTasks(data.map(toTask));
+      setLoaded(true);
+    }
+  }, [dateFrom, dateTo]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const addTask = useCallback(
+    async (title: string, date: string | null, category: TaskCategory = 'personal') => {
+      const tempTask: Task = {
+        id: nextTempId(),
         title,
         completed: false,
         date,
@@ -206,165 +90,258 @@ export function useTasks() {
         notes: '',
         subtasks: [],
         recurrence: null,
-        order: matching.length,
+        order: 999,
       };
-      return [...prev, newTask];
-    });
-  }, []);
+      setTasks((prev) => [...prev, tempTask]);
+      try {
+        await apiFetch('/tasks', {
+          method: 'POST',
+          body: JSON.stringify({ title, date, category }),
+        });
+      } finally {
+        await refresh();
+      }
+    },
+    [refresh]
+  );
 
-  const updateTask = useCallback((id: string, updates: Partial<Task>) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
-    );
-  }, []);
+  const updateTask = useCallback(
+    async (id: string, updates: Partial<Task>) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
+      );
 
-  const deleteTask = useCallback((id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+      const body: Record<string, unknown> = {};
+      if (updates.title !== undefined) body.title = updates.title;
+      if (updates.completed !== undefined) body.completed = updates.completed;
+      if (updates.date !== undefined) body.date = updates.date;
+      if (updates.category !== undefined) body.category = updates.category;
+      if (updates.isLabel !== undefined) body.isLabel = updates.isLabel;
+      if (updates.color !== undefined) body.color = updates.color;
+      if (updates.notes !== undefined) body.notes = updates.notes;
+      if (updates.order !== undefined) body.order = updates.order;
 
-  const deleteTaskAndFuture = useCallback((id: string) => {
-    setTasks((prev) => {
-      const task = prev.find((t) => t.id === id);
-      if (!task) return prev;
+      try {
+        await apiFetch(`/tasks/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        });
+      } catch {
+        await refresh();
+      }
+    },
+    [refresh]
+  );
 
-      const parentId = task.recurringParentId ?? id;
-      return prev.filter((t) => {
-        if (t.id === id) return false;
-        if (t.recurringParentId === parentId && t.date && task.date && t.date >= task.date) return false;
-        return true;
-      });
-    });
-  }, []);
+  const deleteTask = useCallback(
+    async (id: string) => {
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      try {
+        await apiFetch(`/tasks/${id}`, { method: 'DELETE' });
+      } catch {
+        await refresh();
+      }
+    },
+    [refresh]
+  );
 
-  const toggleComplete = useCallback((id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    );
-  }, []);
+  const deleteTaskAndFuture = useCallback(
+    async (id: string) => {
+      const task = tasks.find((t) => t.id === id);
+      if (task) {
+        const parentId = task.recurringParentId ?? id;
+        setTasks((prev) =>
+          prev.filter((t) => {
+            if (t.id === id) return false;
+            if (
+              (t.recurringParentId === parentId || t.id === parentId) &&
+              t.date && task.date && t.date >= task.date &&
+              t.id !== id
+            ) {
+              return t.id === parentId;
+            }
+            return true;
+          })
+        );
+      }
+      try {
+        await apiFetch(`/tasks/${id}/future`, { method: 'DELETE' });
+      } finally {
+        await refresh();
+      }
+    },
+    [tasks, refresh]
+  );
 
-  const addSubtask = useCallback((taskId: string, title: string) => {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== taskId) return t;
-        const sub: Subtask = { id: genId(), title, completed: false };
-        return { ...t, subtasks: [...t.subtasks, sub] };
-      })
-    );
-  }, []);
+  const toggleComplete = useCallback(
+    async (id: string) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+      );
+      const task = tasks.find((t) => t.id === id);
+      if (!task) return;
+      try {
+        await apiFetch(`/tasks/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ completed: !task.completed }),
+        });
+      } catch {
+        await refresh();
+      }
+    },
+    [tasks, refresh]
+  );
 
-  const toggleSubtask = useCallback((taskId: string, subtaskId: string) => {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== taskId) return t;
-        return {
-          ...t,
-          subtasks: t.subtasks.map((s) =>
-            s.id === subtaskId ? { ...s, completed: !s.completed } : s
-          ),
-        };
-      })
-    );
-  }, []);
+  const addSubtask = useCallback(
+    async (taskId: string, title: string) => {
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.id !== taskId) return t;
+          return {
+            ...t,
+            subtasks: [
+              ...t.subtasks,
+              { id: nextTempId(), title, completed: false },
+            ],
+          };
+        })
+      );
+      try {
+        await apiFetch(`/tasks/${taskId}/subtasks`, {
+          method: 'POST',
+          body: JSON.stringify({ title }),
+        });
+      } finally {
+        await refresh();
+      }
+    },
+    [refresh]
+  );
 
-  const deleteSubtask = useCallback((taskId: string, subtaskId: string) => {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== taskId) return t;
-        return { ...t, subtasks: t.subtasks.filter((s) => s.id !== subtaskId) };
-      })
-    );
-  }, []);
+  const toggleSubtask = useCallback(
+    async (taskId: string, subtaskId: string) => {
+      const task = tasks.find((t) => t.id === taskId);
+      const sub = task?.subtasks.find((s) => s.id === subtaskId);
+      if (!sub) return;
 
-  const setTaskColor = useCallback((id: string, color: TaskColor) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, color } : t))
-    );
-  }, []);
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.id !== taskId) return t;
+          return {
+            ...t,
+            subtasks: t.subtasks.map((s) =>
+              s.id === subtaskId ? { ...s, completed: !s.completed } : s
+            ),
+          };
+        })
+      );
+      try {
+        await apiFetch(`/subtasks/${subtaskId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ completed: !sub.completed }),
+        });
+      } catch {
+        await refresh();
+      }
+    },
+    [tasks, refresh]
+  );
+
+  const deleteSubtask = useCallback(
+    async (taskId: string, subtaskId: string) => {
+      setTasks((prev) =>
+        prev.map((t) => {
+          if (t.id !== taskId) return t;
+          return {
+            ...t,
+            subtasks: t.subtasks.filter((s) => s.id !== subtaskId),
+          };
+        })
+      );
+      try {
+        await apiFetch(`/subtasks/${subtaskId}`, { method: 'DELETE' });
+      } catch {
+        await refresh();
+      }
+    },
+    [refresh]
+  );
+
+  const setTaskColor = useCallback(
+    async (id: string, color: TaskColor) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, color } : t))
+      );
+      try {
+        await apiFetch(`/tasks/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ color }),
+        });
+      } catch {
+        await refresh();
+      }
+    },
+    [refresh]
+  );
 
   const setRecurrence = useCallback(
-    (id: string, recurrence: RecurrenceRule | null) => {
-      setTasks((prev) => {
-        // remove old generated instances (uncompleted ones only)
-        const withoutOldInstances = prev.filter(
-          (t) => !(t.recurringParentId === id && !t.completed)
-        );
-
-        const task = withoutOldInstances.find((t) => t.id === id);
-        if (!task) return prev;
-
-        // update the recurrence rule on the template task
-        const updated = withoutOldInstances.map((t) =>
-          t.id === id ? { ...t, recurrence } : t
-        );
-
-        if (!recurrence || !task.date) return updated;
-
-        // generate instances on future dates
-        const dates = getRecurrenceDates(task.date, recurrence);
-        const existingDates = new Set(
-          updated
-            .filter((t) => t.recurringParentId === id)
-            .map((t) => t.date)
-        );
-
-        const newInstances: Task[] = dates
-          .filter((d) => !existingDates.has(d))
-          .map((date) => ({
-            id: genId(),
-            title: task.title,
-            completed: false,
-            date,
-            category: task.category,
-            isLabel: false,
-            color: task.color,
-            notes: task.notes,
-            subtasks: [],
-            recurrence: null,
-            recurringParentId: id,
-            order: 0,
-          }));
-
-        return [...updated, ...newInstances];
-      });
+    async (id: string, recurrence: RecurrenceRule | null) => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, recurrence } : t))
+      );
+      try {
+        if (recurrence) {
+          await apiFetch(`/tasks/${id}/recurrence`, {
+            method: 'POST',
+            body: JSON.stringify(recurrence),
+          });
+        } else {
+          await apiFetch(`/tasks/${id}/recurrence`, { method: 'DELETE' });
+        }
+      } finally {
+        await refresh();
+      }
     },
-    []
+    [refresh]
   );
 
   const moveTask = useCallback(
-    (taskId: string, newDate: string | null, newCategory: TaskCategory, newIndex: number) => {
+    async (taskId: string, newDate: string | null, newCategory: TaskCategory, newIndex: number) => {
       setTasks((prev) => {
         const task = prev.find((t) => t.id === taskId);
         if (!task) return prev;
-
         const withoutTask = prev.filter((t) => t.id !== taskId);
-        const tasksInTarget = withoutTask
-          .filter((t) => t.date === newDate && t.category === newCategory)
+        const target = withoutTask
+          .filter((t) => t.date === newDate && t.category === newCategory && !t.isLabel)
           .sort((a, b) => a.order - b.order);
-
-        tasksInTarget.splice(newIndex, 0, { ...task, date: newDate, category: newCategory });
-        const reordered = tasksInTarget.map((t, i) => ({ ...t, order: i }));
-
-        const others = withoutTask.filter((t) => !(t.date === newDate && t.category === newCategory));
+        target.splice(newIndex, 0, { ...task, date: newDate, category: newCategory });
+        const reordered = target.map((t, i) => ({ ...t, order: i }));
+        const others = withoutTask.filter(
+          (t) => !(t.date === newDate && t.category === newCategory && !t.isLabel)
+        );
         return [...others, ...reordered];
       });
+      try {
+        await apiFetch('/tasks/move', {
+          method: 'POST',
+          body: JSON.stringify({
+            taskId: Number(taskId),
+            newDate,
+            newCategory,
+            newIndex,
+          }),
+        });
+      } catch {
+        await refresh();
+      }
     },
-    []
+    [refresh]
   );
 
-  const rolloverTasks = useCallback(() => {
-    const todayStr = toDateString(new Date());
-    setTasks((prev) => {
-      let changed = false;
-      const updated = prev.map((t) => {
-        if (t.date && !t.completed && !t.isLabel && !t.recurringParentId && isPast(t.date)) {
-          changed = true;
-          return { ...t, date: todayStr };
-        }
-        return t;
-      });
-      return changed ? updated : prev;
-    });
-  }, []);
+  const rolloverTasks = useCallback(async () => {
+    await apiFetch('/tasks/rollover', { method: 'POST' });
+    await refresh();
+  }, [refresh]);
 
   const getTasksForDate = useCallback(
     (date: string | null, category: TaskCategory): Task[] => {
@@ -390,6 +367,7 @@ export function useTasks() {
 
   return {
     tasks,
+    loaded,
     addTask,
     updateTask,
     deleteTask,

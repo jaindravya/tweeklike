@@ -15,10 +15,11 @@
         "titleBar.activeForeground": "#15202b",
         "titleBar.inactiveBackground": "#f4b6cf99",
         "titleBar.inactiveForeground": "#15202b99",
+        "panel.background": "#110113",
         "sash.hoverBorder": "#fbe2ec",
         "commandCenter.border": "#15202b99",
         "terminal.background": "#24111b",
-        "terminal.foreground": "#0f0b0b",
+        "terminal.foreground": "#cca4c2",
         "terminalCursor.foreground": "#db4a7f",
         "terminal.ansiPink": "#ff6fa5",
         "terminal.ansiRed": "#ff4d94"

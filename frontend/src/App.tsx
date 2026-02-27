@@ -6,7 +6,7 @@ import SomedaySection from './components/SomedaySection';
 import TaskModal from './components/TaskModal';
 import { useTasks } from './hooks/useTasks';
 import { useTheme } from './hooks/useTheme';
-import { getWeekDates, addWeeks, formatMonthYear } from './utils/dateUtils';
+import { getWeekDates, addWeeks, formatMonthYear, toDateString } from './utils/dateUtils';
 import type { Task, TaskCategory } from './types';
 import './App.css';
 
@@ -22,6 +22,10 @@ export default function App() {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const { theme, setTheme, themes } = useTheme();
+
+  const weekDates = getWeekDates(currentDate);
+  const dateFrom = toDateString(weekDates[0]);
+  const dateTo = toDateString(weekDates[6]);
 
   const {
     tasks,
@@ -40,13 +44,11 @@ export default function App() {
     getTasksForDate,
     getLabelsForDate,
     somedayTasks,
-  } = useTasks();
+  } = useTasks(dateFrom, dateTo);
 
   useEffect(() => {
     rolloverTasks();
   }, [rolloverTasks]);
-
-  const weekDates = getWeekDates(currentDate);
   const title = formatMonthYear(weekDates);
 
   const handlePrevWeek = () => setCurrentDate((d) => addWeeks(d, -1));
